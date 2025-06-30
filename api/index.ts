@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-
 import axios from "axios";
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
@@ -20,30 +19,23 @@ const db = getFirestore(firebaseApp);
 const youtubeApiKey = "AIzaSyAUD7ipwX-VAIIgbtw4V6sHKOTfyWoPdMo";
 
 const app = new Hono();
-
-// 首頁路由
-app.get("/", (ctx) => {
-  return ctx.text("Hello Hono", 200, {
-    "Content-Type": "text/plain; charset=utf-8",
-  });
-});
-
-// /api 群組路由
 const api = new Hono();
 
-api.get("/hello", (ctx) => {
-  return ctx.json(
+app.get("/", (ctx) =>
+  ctx.text("Hello Hono", 200, { "Content-Type": "text/plain; charset=utf-8" })
+);
+
+api.get("/hello", (ctx) =>
+  ctx.json(
     {
       message: "Hello World.",
       message2: "こんにちは、世界。",
       message3: "世界，你好!",
     },
     200,
-    {
-      "Content-Type": "application/json; charset=utf-8",
-    }
-  );
-});
+    { "Content-Type": "application/json; charset=utf-8" }
+  )
+);
 
 api.get("/firebasefood", async (ctx) => {
   try {
@@ -85,6 +77,9 @@ api.get("/youtube/channel/:channelIds", async (ctx) => {
         id: channelIds.join(","),
         key: youtubeApiKey,
       },
+      headers: {
+        "Accept-Encoding": "gzip, deflate",
+      },
     });
 
     const items = res.data?.items || [];
@@ -123,6 +118,9 @@ api.get("/youtube/videos/:videoIds", async (ctx) => {
         part: "snippet,statistics",
         id: videoIds.join(","),
         key: youtubeApiKey,
+      },
+      headers: {
+        "Accept-Encoding": "gzip, deflate",
       },
     });
 
@@ -186,6 +184,9 @@ api.get("/bilibili/:bvid", async (ctx) => {
   try {
     const res = await axios.get("https://api.bilibili.com/x/web-interface/view", {
       params: { bvid },
+      headers: {
+        "Accept-Encoding": "gzip, deflate",
+      },
     });
 
     const { pic, title, owner, stat, pages } = res.data.data;
@@ -218,7 +219,10 @@ api.get("/bilibili/proxyimg", async (ctx) => {
   try {
     const response = await axios.get(url, {
       responseType: "stream",
-      headers: { Referer: "https://www.bilibili.com/" },
+      headers: {
+        Referer: "https://www.bilibili.com/",
+        "Accept-Encoding": "gzip, deflate",
+      },
     });
 
     const headers = {
@@ -232,10 +236,8 @@ api.get("/bilibili/proxyimg", async (ctx) => {
   }
 });
 
-// 掛載 /api 路由群組
 app.route("/api", api);
 
-// Bun 啟動
 Bun.serve({
   port: 3000,
   fetch: app.fetch,
