@@ -234,7 +234,10 @@ api.get("/bilibili/proxyimg", async (ctx) => {
 // 掛載 /api 路由群組
 app.route("/api", api);
 
-// 啟動伺服器
-app.listen(3000).then(() => {
-  console.log("🦊 Hono is running at http://localhost:3000");
+// Bun 啟動
+Bun.serve({
+  port: 3000,
+  fetch: app.fetch,
 });
+
+console.log("🦊 Hono server running at http://localhost:3000");
