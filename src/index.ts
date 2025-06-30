@@ -1,5 +1,4 @@
 import { Hono } from 'hono'
-
 import { serve } from '@hono/node-server'
 import axios from 'axios'
 import { initializeApp } from 'firebase/app'
