@@ -177,6 +177,32 @@ api.get("/countdown/:slug", (ctx) => {
   });
 });
 
+api.get("/bilibili/proxyimg", async (ctx) => {
+  const url = ctx.req.query("url");
+  if (!url) {
+    return ctx.json({ error: "請提供 url 參數" }, 400);
+  }
+
+  try {
+    const response = await axios.get(url, {
+      responseType: "stream",
+      headers: {
+        Referer: "https://www.bilibili.com/",
+        "Accept-Encoding": "gzip, deflate",
+      },
+    });
+
+    const headers = {
+      "Content-Type": response.headers["content-type"] || "application/octet-stream",
+      "Cache-Control": "public, max-age=86400",
+    };
+
+    return ctx.body(response.data, 200, headers);
+  } catch (err: any) {
+    return ctx.json({ error: "圖片代理失敗", message: err.message }, 500);
+  }
+});
+
 api.get("/bilibili/:bvid", async (ctx) => {
   const bvid = ctx.req.param("bvid");
   if (!bvid) return ctx.json({ error: "請提供 bvid 參數" }, 400);
@@ -207,32 +233,6 @@ api.get("/bilibili/:bvid", async (ctx) => {
       },
       500
     );
-  }
-});
-
-api.get("/bilibili/proxyimg", async (ctx) => {
-  const url = ctx.req.query("url");
-  if (!url) {
-    return ctx.json({ error: "請提供 url 參數" }, 400);
-  }
-
-  try {
-    const response = await axios.get(url, {
-      responseType: "stream",
-      headers: {
-        Referer: "https://www.bilibili.com/",
-        "Accept-Encoding": "gzip, deflate",
-      },
-    });
-
-    const headers = {
-      "Content-Type": response.headers["content-type"] || "application/octet-stream",
-      "Cache-Control": "public, max-age=86400",
-    };
-
-    return ctx.body(response.data, 200, headers);
-  } catch (err: any) {
-    return ctx.json({ error: "圖片代理失敗", message: err.message }, 500);
   }
 });
 
